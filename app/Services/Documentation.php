@@ -60,7 +60,7 @@ class Documentation implements DocumentationInterface {
             'text' => $this->url
         ]);
 
-        return 'Success';
+        return null;
     }
 
     private function checkFlags($parts)
