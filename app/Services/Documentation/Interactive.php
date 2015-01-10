@@ -20,6 +20,8 @@ class Interactive implements DocumentationInterface {
 
         $this->results = $this->checkAndHelp();
 
+        dd($this->results);
+
         return $this->sendToSlack();
     }
 
@@ -46,14 +48,24 @@ class Interactive implements DocumentationInterface {
         $versions = new Collection($this->github->api('repo')->branches('laravel', 'docs'));
         $versions = new Collection(array_fetch($versions->toArray(), 'name'));
 
-        return $this->prettyArray($versions);
+        return $this->prettyArray('versions', $versions);
     }
 
-    private function prettyArray($array)
+    private function getHeaders()
+    {
+        $headers = new Collection($this->github->api('repo')->contents()->show('laravel', 'docs', null, $this->documentation->version));
+        $headers = $headers->map(function ($header) {
+            return substr($header['name'], 0, -3);
+        });
+
+        return $this->prettyArray('sections', $headers);
+    }
+
+    private function prettyArray($type, $array)
     {
         $array = $array->chunk(4);
 
-        return implode("<br />", array_map([$this, 'implode'], $array->toArray()));
+        return 'Available documents '. $type ." are:\n" . implode("\n", array_map([$this, 'implode'], $array->toArray()));
     }
 
     private function implode($array)

@@ -69,7 +69,7 @@ class Documentation implements DocumentationInterface {
     {
         $helpIndex = $parts->search('-h');
 
-        if ($helpIndex == false) {
+        if ($helpIndex != false) {
             $this->helpFlag = true;
 
             $parts->forget($helpIndex);
