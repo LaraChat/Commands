@@ -65,7 +65,7 @@ class Interactive implements DocumentationInterface {
     {
         $array = $array->chunk(4);
 
-        return 'Available documents '. $type ." are:\n" . implode("\n", array_map([$this, 'implode'], $array->toArray()));
+        return '*Available document '. $type ." are*:\n" . implode("\n", array_map([$this, 'implode'], $array->toArray()));
     }
 
     private function implode($array)
