@@ -52,7 +52,7 @@ class DocController extends Controller {
     {
         $documentation = new Documentation($request->get('text'));
 
-        dd($documentation->handle());
+        return $documentation->handle();
 
         dd($details);
         $version = $details[0];
