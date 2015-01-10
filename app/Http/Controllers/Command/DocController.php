@@ -49,20 +49,22 @@ class DocController extends Controller {
 
     public function index(Request $request)
     {
-        echo '<pre>'. print_r($request->all(), 1) .'</pre>'; die;
+        $details = explode(' ', $request);
+        $version = $details[0];
+
         $url = $this->getDocumentsUrl($version);
 
-        if ($main == null) {
-            return $this->getDocumentOptions($url);
+        if (isset($details[1])) {
+            return $this->getDocumentOptions($url, $version);
         }
-        if ($sub == null) {
-            return $this->getDocumentAreaOptions($url, $main);
+        if (isset($details[2])) {
+            return $this->getDocumentAreaOptions($url, $details[1]);
         }
 
-        return $this->documentLink($url, $main, $sub);
+        return $this->documentLink($url, $details[1], $details[2]);
     }
 
-    protected function getDocumentOptions($url)
+    protected function getDocumentOptions($url, $version)
     {
         $cacheKey = 'laravel.docs.main';
 
@@ -80,9 +82,11 @@ class DocController extends Controller {
             $this->cache->put($cacheKey, $documents, $this->cacheTime);
         }
 
+        return 'The following options are available for version '. $version ."\n". implode("\n", $documents->toArray());
+
         $response = $this->slack->execute('chat.postMessage', [
             'channel' => 'U03AGP8V4',
-            'text' => implode(', ', $documents->toArray())
+            'text'    => implode(', ', $documents->toArray())
         ]);
 
         dump($response);
