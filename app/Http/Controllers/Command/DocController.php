@@ -52,7 +52,7 @@ class DocController extends Controller {
     {
         $documentation = new Documentation($request, $this->slack);
 
-        return $documentation->handle();
+        return $documentation->handle($this->github);
     }
 
     protected function getDocumentOptions($url, $version)

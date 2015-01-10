@@ -37,10 +37,10 @@ class Documentation implements DocumentationInterface {
         $this->checkParts($parts);
     }
 
-    public function handle()
+    public function handle($github)
     {
         if ($this->helpFlag == true) {
-            return $this->interactive->start($this);
+            return $this->interactive->start($this, $github);
         }
 
         return $this->sendToSlack();
@@ -69,10 +69,10 @@ class Documentation implements DocumentationInterface {
     {
         $helpIndex = $parts->search('-h');
 
-        if ($helpIndex != null) {
+        if ($helpIndex == false) {
             $this->helpFlag = true;
 
-            $parts->forget($this->helpFlag);
+            $parts->forget($helpIndex);
         }
 
         return $parts;
