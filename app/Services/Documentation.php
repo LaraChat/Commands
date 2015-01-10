@@ -55,10 +55,12 @@ class Documentation implements DocumentationInterface {
 
     public function sendToSlack()
     {
-        return $this->slack->execute('chat.postMessage', [
+        $this->slack->execute('chat.postMessage', [
             'channel' => $this->request->get('channel_id'),
             'text' => $this->url
         ]);
+
+        return 'Success';
     }
 
     private function checkFlags($parts)
