@@ -5,6 +5,11 @@ use Frlnc\Slack\Http\CurlInteractor;
 use Frlnc\Slack\Http\SlackResponseFactory;
 use Illuminate\Config\Repository;
 
+/**
+ * @method execute($command, array $parameters = [])
+ * @method setToken($token)
+ * @method static format($string)
+ */
 class Slack {
 
     public function __construct(Repository $config)

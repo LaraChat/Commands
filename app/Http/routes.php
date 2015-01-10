@@ -33,7 +33,7 @@ Route::group(['namespace' => 'Command'], function () {
     |--------------------------------------------------------------------------
     */
     Route::group(['prefix' => 'docs'], function () {
-        Route::get('/{version?}/{main?}/{sub?}', [
+        Route::any('/}', [
             'as'   => 'docs.index',
             'uses' => 'DocController@index'
         ]);

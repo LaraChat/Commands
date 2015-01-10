@@ -1,5 +1,7 @@
-<?php namespace App\Http\Controllers;
+<?php namespace App\Http\Controllers\Command;
 
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Request;
 use App\Services\Slack;
 use DOMDocument;
 use DOMXPath;
@@ -45,8 +47,9 @@ class DocController extends Controller {
         $this->slack    = $slack;
     }
 
-    public function index($version = 'master', $main = null, $sub = null)
+    public function index(Request $request)
     {
+        echo '<pre>'. print_r($request->all(), 1) .'</pre>'; die;
         $url = $this->getDocumentsUrl($version);
 
         if ($main == null) {
@@ -57,6 +60,56 @@ class DocController extends Controller {
         }
 
         return $this->documentLink($url, $main, $sub);
+    }
+
+    protected function getDocumentOptions($url)
+    {
+        $cacheKey = 'laravel.docs.main';
+
+        // @todo - remove this before going live
+        $this->cache->forget($cacheKey);
+
+        if ($this->cache->has($cacheKey)) {
+            $documents = $this->cache->get($cacheKey);
+        } else {
+            $documents = new Collection($this->github->api('repo')->contents()->show('laravel', 'docs'));
+            $documents = $documents->map(function ($document) {
+                return ucwords(substr($document['name'], 0, -3));
+            });
+
+            $this->cache->put($cacheKey, $documents, $this->cacheTime);
+        }
+
+        $response = $this->slack->execute('chat.postMessage', [
+            'channel' => 'U03AGP8V4',
+            'text' => implode(', ', $documents->toArray())
+        ]);
+
+        dump($response);
+        dump($documents);
+        die;
+
+        if ($response['ok']) {
+            dd('did it');
+        } else {
+            dd('failed');
+        }
+    }
+
+    private function getDocumentsUrl($version)
+    {
+        $baseUrl = 'https://github.com/laravel/docs/blob/';
+
+        return $baseUrl . $version . '/';
+    }
+
+    private function getFileNames($file)
+    {
+        return $file['name'];
+    }
+
+    private function markdownTest($version)
+    {
         $docs = file_get_contents('https://github.com/laravel/docs/blob/' . $version . '/eloquent.md');
         $html = html_entity_decode(trim($this->markdown->convertToHtml($docs)));
 
@@ -80,47 +133,6 @@ class DocController extends Controller {
         }
 
         //dd($nodes->item(0)->childNodes->item(0)->childNodes->item(0)->childNodes->item(0));
-    }
-
-    protected function getDocumentOptions($url)
-    {
-        $cacheKey = 'laravel.docs.main';
-
-        // @todo - remove this before going live
-        $this->cache->forget($cacheKey);
-
-        if ($this->cache->has($cacheKey)) {
-            $documents = $this->cache->get($cacheKey);
-        } else {
-            $documents = new Collection($this->github->api('repo')->contents()->show('laravel', 'docs'));
-            $documents = $documents->map(function ($document) {
-                return $document['name'];
-            });
-
-            $this->cache->put($cacheKey, $documents, $this->cacheTime);
-        }
-
-        $response = $this->slack->execute('users.list');
-
-        dd($response->getBody());
-
-        if ($response['ok']) {
-            dd('did it');
-        } else {
-            dd('failed');
-        }
-    }
-
-    private function getDocumentsUrl($version)
-    {
-        $baseUrl = 'https://github.com/laravel/docs/blob/';
-
-        return $baseUrl . $version . '/';
-    }
-
-    private function getFileNames($file)
-    {
-        return $file['name'];
     }
 
 }
