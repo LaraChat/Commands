@@ -77,12 +77,12 @@ class Interactive implements DocumentationInterface {
 
         $subs = $this->convertHtmlToArray($html);
 
-        return $this->prettyArray('sub sections', $subs);
+        return $this->prettyArray('sub sections', $subs, 6);
     }
 
-    private function prettyArray($type, $array)
+    private function prettyArray($type, $array, $chunkSize = 8)
     {
-        $array = $array->chunk(8);
+        $array = $array->chunk($chunkSize);
 
         return '*Available document ' . $type . " are*:\n" . implode("\n", array_map([$this, 'implode'], $array->toArray()));
     }
