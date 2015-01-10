@@ -50,9 +50,13 @@ class DocController extends Controller {
 
     public function index(Request $request)
     {
-        $documentation = new Documentation($request, $this->slack);
+        try {
+            $documentation = new Documentation($request, $this->slack);
 
-        return $documentation->handle($this->github);
+            return $documentation->handle($this->github);
+        } catch (\Exception $e) {
+            return 'Something went wrong.  Check your command for any spelling errors and try again.';
+        }
     }
 
 }
