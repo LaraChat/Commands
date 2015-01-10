@@ -20,8 +20,6 @@ class Interactive implements DocumentationInterface {
 
         $this->results = $this->checkAndHelp();
 
-        dd($this->results);
-
         return $this->sendToSlack();
     }
 
