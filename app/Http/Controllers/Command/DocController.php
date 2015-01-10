@@ -49,7 +49,7 @@ class DocController extends Controller {
 
     public function index(Request $request)
     {
-        $details = explode(' ', $request);
+        $details = explode(' ', $request->get('text'));
         $version = $details[0];
 
         $url = $this->getDocumentsUrl($version);
