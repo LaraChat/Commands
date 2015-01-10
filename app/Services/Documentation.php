@@ -7,7 +7,7 @@ use Illuminate\Support\Collection;
 
 class Documentation implements DocumentationInterface {
 
-    public    $url      = 'http://laravel.com/docs/';
+    public    $url      = 'http://laravel.com/docs';
 
     public    $version;
 
@@ -31,7 +31,7 @@ class Documentation implements DocumentationInterface {
         $parts             = new Collection(explode(' ', $this->request->get('text')));
 
         // Check for helper flag
-        $this->checkFlags($parts);
+        $parts = $this->checkFlags($parts);
 
         // Handle the parts
         $this->checkParts($parts);
@@ -48,7 +48,7 @@ class Documentation implements DocumentationInterface {
 
     public function appendUrl($data, $separator = '/')
     {
-        $this->url .= $data . $separator;
+        $this->url .= $separator . $data;
 
         return $this;
     }
@@ -72,27 +72,29 @@ class Documentation implements DocumentationInterface {
 
             $parts->forget($this->helpFlag);
         }
+
+        return $parts;
     }
 
     private function checkParts($parts)
     {
-        if ($parts->first() != null) {
-            $this->version = $this->getDataAppendUrl($parts);
+        if ($parts->has(0) != null) {
+            list($parts, $this->version) = $this->getDataAppendUrl(0, $parts);
         }
-        if ($parts->first() != null) {
-            $this->header = $this->getDataAppendUrl($parts, '#');
+        if ($parts->has(1) != null) {
+            list($parts, $this->header) = $this->getDataAppendUrl(1, $parts);
         }
-        if ($parts->first() != null) {
-            $this->sub = $this->getDataAppendUrl($parts, null);
+        if ($parts->has(2) != null) {
+            list($parts, $this->sub) = $this->getDataAppendUrl(2, $parts, '#');
         }
     }
 
-    private function getDataAppendUrl($parts, $separator = '/')
+    private function getDataAppendUrl($index, $parts, $separator = '/')
     {
-        $data = $parts->pull(0);
+        $data = $parts->pull($index);
 
         $this->appendUrl($data, $separator);
 
-        return $data;
+        return [$parts, $data];
     }
 }
