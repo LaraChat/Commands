@@ -44,7 +44,7 @@ class Interactive implements DocumentationInterface {
     private function getVersions()
     {
         $versions = new Collection($this->github->api('repo')->branches('laravel', 'docs'));
-        $versions = new Collection(array_fetch($versions->toArray(), 'name'));
+        $versions = (new Collection(array_fetch($versions->toArray(), 'name')))->reverse();
 
         return $this->prettyArray('versions', $versions);
     }
