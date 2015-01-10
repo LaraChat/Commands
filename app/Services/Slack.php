@@ -12,7 +12,7 @@ class Slack {
         $interactor = new CurlInteractor;
         $interactor->setResponseFactory(new SlackResponseFactory);
 
-        $this->commander = new Commander($config->get('slack.token'), $interactor);
+        $this->commander = new Commander($config->get('services.slack.token'), $interactor);
     }
 
     public function __call($name, $arguments)

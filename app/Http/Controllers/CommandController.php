@@ -100,10 +100,8 @@ class CommandController extends Controller {
 
         $response = $this->slack->execute('chat.postMessage', [
             'channel' => '#slack-testing',
-            'text' => 'initial testing'
+            'text' => implode(', ', $documents->toArray())
         ]);
-
-        dd($response);
 
         if ($response['ok']) {
             dd('did it');
