@@ -1,12 +1,12 @@
 <?php namespace App\Http\Controllers\Command;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Request;
 use App\Services\Slack;
 use DOMDocument;
 use DOMXPath;
 use Github\Client;
 use Illuminate\Cache\Repository;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use League\CommonMark\CommonMarkConverter;
 
