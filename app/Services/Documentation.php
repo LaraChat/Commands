@@ -2,6 +2,7 @@
 
 use App\Services\Contracts\Documentation as DocumentationInterface;
 use App\Services\Documentation\Interactive;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 class Documentation implements DocumentationInterface {
@@ -18,10 +19,16 @@ class Documentation implements DocumentationInterface {
 
     private   $interactive;
 
-    public function __construct($payload)
+    private   $request;
+
+    private   $slack;
+
+    public function __construct(Request $request, Slack $slack)
     {
+        $this->request     = $request;
+        $this->slack       = $slack;
         $this->interactive = new Interactive;
-        $parts             = new Collection(explode(' ', $payload));
+        $parts             = new Collection(explode(' ', $this->request->get('text')));
 
         // Check for helper flag
         $this->checkFlags($parts);
@@ -48,7 +55,10 @@ class Documentation implements DocumentationInterface {
 
     public function sendToSlack()
     {
-        return $this->url;
+        return $this->slack->execute('chat.postMessage', [
+            'channel' => $this->request->get('channel_id'),
+            'text' => $this->url
+        ]);
     }
 
     private function checkFlags($parts)

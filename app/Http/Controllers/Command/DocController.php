@@ -50,25 +50,9 @@ class DocController extends Controller {
 
     public function index(Request $request)
     {
-        $documentation = new Documentation($request->get('text'));
+        $documentation = new Documentation($request, $this->slack);
 
         return $documentation->handle();
-
-        dd($details);
-        $version = $details[0];
-
-        $url = $this->getDocumentsUrl($version);
-
-        dd(array_search('!', $details));
-
-        if (! isset($details[1])) {
-            return $this->getDocumentOptions($url, $version);
-        }
-        if (! isset($details[2])) {
-            return $this->getDocumentAreaOptions($url, $details[1]);
-        }
-
-        return $this->documentLink($url, $details[1], $details[2]);
     }
 
     protected function getDocumentOptions($url, $version)
