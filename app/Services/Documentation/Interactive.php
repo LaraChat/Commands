@@ -61,7 +61,7 @@ class Interactive implements DocumentationInterface {
 
     private function prettyArray($type, $array)
     {
-        $array = $array->chunk(4);
+        $array = $array->chunk(8);
 
         return '*Available document '. $type ." are*:\n" . implode("\n", array_map([$this, 'implode'], $array->toArray()));
     }
