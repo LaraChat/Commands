@@ -6,10 +6,10 @@ use DOMXPath;
 use Github\Client;
 use Illuminate\Cache\Repository;
 use Illuminate\Contracts\Routing\ResponseFactory;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 use League\CommonMark\CommonMarkConverter;
 
-class CommandController extends Controller {
+class DocController extends Controller {
 
     /**
      * @var CommonMarkConverter
@@ -44,21 +44,7 @@ class CommandController extends Controller {
         $this->slack    = $slack;
     }
 
-    public function userList(ResponseFactory $response)
-    {
-        $users = new Collection($this->slack->execute('users.list')->getBody()['members']);
-
-        return $response->json($users);
-    }
-
-    public function userCount(ResponseFactory $response)
-    {
-        $users = new Collection($this->slack->execute('users.list')->getBody()['members']);
-
-        return $response->json($users);
-    }
-
-    public function getDocs($version = 'master', $main = null, $sub = null)
+    public function index($version = 'master', $main = null, $sub = null)
     {
         $url = $this->getDocumentsUrl($version);
 
