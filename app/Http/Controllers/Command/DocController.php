@@ -1,6 +1,7 @@
 <?php namespace App\Http\Controllers\Command;
 
 use App\Http\Controllers\Controller;
+use App\Services\Documentation;
 use App\Services\Slack;
 use DOMDocument;
 use DOMXPath;
@@ -49,10 +50,16 @@ class DocController extends Controller {
 
     public function index(Request $request)
     {
-        $details = explode(' ', $request->get('text'));
+        $documentation = new Documentation($request->get('text'));
+
+        dd($documentation->handle());
+
+        dd($details);
         $version = $details[0];
 
         $url = $this->getDocumentsUrl($version);
+
+        dd(array_search('!', $details));
 
         if (! isset($details[1])) {
             return $this->getDocumentOptions($url, $version);
@@ -74,7 +81,7 @@ class DocController extends Controller {
         if ($this->cache->has($cacheKey)) {
             $documents = $this->cache->get($cacheKey);
         } else {
-            $documents = new Collection($this->github->api('repo')->contents()->show('laravel', 'docs'));
+            $documents = new Collection($this->github->api('repo')->contents()->show('laravel', 'docs', null, $version));
             $documents = $documents->map(function ($document) {
                 return ucwords(substr($document['name'], 0, -3));
             });
@@ -82,7 +89,11 @@ class DocController extends Controller {
             $this->cache->put($cacheKey, $documents, $this->cacheTime);
         }
 
-        return 'The following options are available for version ' . $version . "\n" . implode("\n", $documents->toArray());
+        $documents = $documents->chunk(4);
+
+        //dd($documents);
+
+        return 'The following options are available for version ' . $version . "<br />" . implode("<br />", array_map('implode', $documents->toArray()));
 
         $response = $this->slack->execute('chat.postMessage', [
             'channel' => 'U03AGP8V4',
