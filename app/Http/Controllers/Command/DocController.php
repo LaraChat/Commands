@@ -54,10 +54,10 @@ class DocController extends Controller {
 
         $url = $this->getDocumentsUrl($version);
 
-        if (isset($details[1])) {
+        if (! isset($details[1])) {
             return $this->getDocumentOptions($url, $version);
         }
-        if (isset($details[2])) {
+        if (! isset($details[2])) {
             return $this->getDocumentAreaOptions($url, $details[1]);
         }
 
@@ -82,7 +82,7 @@ class DocController extends Controller {
             $this->cache->put($cacheKey, $documents, $this->cacheTime);
         }
 
-        return 'The following options are available for version '. $version ."\n". implode("\n", $documents->toArray());
+        return 'The following options are available for version ' . $version . "\n" . implode("\n", $documents->toArray());
 
         $response = $this->slack->execute('chat.postMessage', [
             'channel' => 'U03AGP8V4',
