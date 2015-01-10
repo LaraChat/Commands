@@ -5,8 +5,7 @@ use DOMDocument;
 use DOMXPath;
 use Github\Client;
 use Illuminate\Cache\Repository;
-use Illuminate\Contracts\Routing\ResponseFactory;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use League\CommonMark\CommonMarkConverter;
 
 class DocController extends Controller {
@@ -38,6 +37,8 @@ class DocController extends Controller {
 
     public function __construct(CommonMarkConverter $markdown, Client $github, Repository $cache, Slack $slack)
     {
+        parent::__construct();
+
         $this->markdown = $markdown;
         $this->github   = $github;
         $this->cache    = $cache;

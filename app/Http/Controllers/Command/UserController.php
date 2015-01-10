@@ -3,7 +3,8 @@
 use App\Http\Controllers\Controller;
 use App\Services\Slack;
 use Illuminate\Contracts\Routing\ResponseFactory;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class UserController extends Controller {
 
@@ -24,11 +25,13 @@ class UserController extends Controller {
 
     public function __construct(Slack $slack, ResponseFactory $response)
     {
+        parent::__construct();
+
         $this->slack    = $slack;
         $this->response = $response;
     }
 
-    public function find($name)
+    public function find($name, Str $str)
     {
         if (substr($name, 0, 1) == 'U' && strlen($name) == 9) {
             return $this->response->json($this->getUsers()->where('id', $name));

@@ -1,8 +1,5 @@
 <?php
 
-Route::get('/', 'WelcomeController@index');
-
-
 /*
 |--------------------------------------------------------------------------
 | Commands
@@ -43,9 +40,9 @@ Route::group(['namespace' => 'Command'], function () {
     });
 });
 
-Route::get('home', 'HomeController@index');
-
-Route::controllers([
-                       'auth'     => 'Auth\AuthController',
-                       'password' => 'Auth\PasswordController',
-                   ]);
+Route::get('/', [
+    'as'   => 'home',
+    'uses' => function () {
+        return 'Hi';
+    }
+]);
