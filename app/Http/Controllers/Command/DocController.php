@@ -29,11 +29,6 @@ class DocController extends Controller {
     private $cache;
 
     /**
-     * @var int
-     */
-    private $cacheTime = 60;
-
-    /**
      * @var Slack
      */
     private $slack;
@@ -51,9 +46,11 @@ class DocController extends Controller {
     public function index(Request $request)
     {
         try {
-            $documentation = new Documentation($request, $this->slack);
+            $documentation = new Documentation($request, $this->slack, $this->github, $this->cache);
 
-            return $documentation->handle($this->github);
+            return $documentation->handle($this->github, $this->cache);
+        } catch (\InvalidArgumentException $e) {
+            return $e->getMessage();
         } catch (\Exception $e) {
             return 'Something went wrong.  Check your command for any spelling errors and try again.';
         }

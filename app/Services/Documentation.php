@@ -2,6 +2,8 @@
 
 use App\Services\Contracts\Documentation as DocumentationInterface;
 use App\Services\Documentation\Interactive;
+use Github\Client;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -23,11 +25,11 @@ class Documentation implements DocumentationInterface {
 
     private   $slack;
 
-    public function __construct(Request $request, Slack $slack)
+    public function __construct(Request $request, Slack $slack, Client $github, Repository $cache)
     {
         $this->request     = $request;
         $this->slack       = $slack;
-        $this->interactive = new Interactive;
+        $this->interactive = new Interactive($this, $github, $cache);
         $parts             = new Collection(explode(' ', $this->request->get('text')));
 
         // Check for helper flag
@@ -37,10 +39,10 @@ class Documentation implements DocumentationInterface {
         $this->checkParts($parts);
     }
 
-    public function handle($github)
+    public function handle($github, $cache)
     {
         if ($this->helpFlag == true) {
-            return $this->interactive->start($this, $github);
+            return $this->interactive->start();
         }
 
         return $this->sendToSlack();
@@ -81,12 +83,15 @@ class Documentation implements DocumentationInterface {
     private function checkParts($parts)
     {
         if ($parts->has(0) != null) {
+            $this->verifyVersion($parts->get(0));
             list($parts, $this->version) = $this->getDataAppendUrl(0, $parts);
         }
         if ($parts->has(1) != null) {
+            $this->verifyHeader($parts->get(1));
             list($parts, $this->header) = $this->getDataAppendUrl(1, $parts);
         }
         if ($parts->has(2) != null) {
+            $this->verifySub($parts->get(2));
             list($parts, $this->sub) = $this->getDataAppendUrl(2, $parts, '#');
         }
     }
@@ -98,5 +103,47 @@ class Documentation implements DocumentationInterface {
         $this->appendUrl($data, $separator);
 
         return [$parts, $data];
+    }
+
+    public function verifyVersion($version = null)
+    {
+        $cacheKey = 'docs.versions';
+
+        $version = $version == null ? $this->version : $version;
+
+        $versions = $this->interactive->getCachedVersions($cacheKey);
+
+        if ($versions->search($version) === false) {
+            $versions = $this->interactive->getVersions();
+            throw new \InvalidArgumentException('The version [' . $version . "] does not seem to exist.\n" . $versions);
+        }
+    }
+
+    public function verifyHeader($header = null)
+    {
+        $cacheKey = 'docs.' . $this->version . '.headers';
+
+        $header = $header == null ? $this->header : $header;
+
+        $headers = $this->interactive->getCachedHeaders($cacheKey);
+
+        if ($headers->search($header) === false) {
+            $headers = $this->interactive->getHeaders();
+            throw new \InvalidArgumentException('The section [' . $header . "] does not seem to exist.\n" . $headers);
+        }
+    }
+
+    public function verifySub($sub = null)
+    {
+        $cacheKey = 'docs.' . $this->version . '.' . $this->header . '.subs';
+
+        $sub = $sub == null ? $this->sub : $sub;
+
+        $subs = $this->interactive->getCachedSubs($cacheKey);
+
+        if ($subs->search($sub) === false) {
+            $subs = $this->interactive->getSubs();
+            throw new \InvalidArgumentException('The sub section [' . $sub . "] does not seem to exist.\n" . $subs);
+        }
     }
 }
