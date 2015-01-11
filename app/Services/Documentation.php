@@ -83,15 +83,15 @@ class Documentation implements DocumentationInterface {
 
     private function checkParts($parts)
     {
-        if ($parts->has(0) != null) {
+        if ($parts->has(0)) {
             $this->verifyVersion($parts->get(0));
             list($parts, $this->version) = $this->getDataAppendUrl(0, $parts);
         }
-        if ($parts->has(1) != null) {
+        if ($parts->has(1)) {
             $this->verifyHeader($parts->get(1));
             list($parts, $this->header) = $this->getDataAppendUrl(1, $parts);
         }
-        if ($parts->has(2) != null) {
+        if ($parts->has(2)) {
             $this->verifySub($parts->get(2));
             list($parts, $this->sub) = $this->getDataAppendUrl(2, $parts, '#');
         }
