@@ -1,23 +1,34 @@
-## Laravel PHP Framework
+# LaraChat Commands
 
-[![Build Status](https://travis-ci.org/laravel/framework.svg)](https://travis-ci.org/laravel/framework)
-[![Total Downloads](https://poser.pugx.org/laravel/framework/downloads.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Stable Version](https://poser.pugx.org/laravel/framework/v/stable.svg)](https://packagist.org/packages/laravel/framework)
-[![Latest Unstable Version](https://poser.pugx.org/laravel/framework/v/unstable.svg)](https://packagist.org/packages/laravel/framework)
-[![License](https://poser.pugx.org/laravel/framework/license.svg)](https://packagist.org/packages/laravel/framework)
+## /docs
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable, creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as authentication, routing, sessions, queueing, and caching.
+### Usage
+#### When you know where the details are
+Docs is a simple enough command to use.  It has 3 arguments and 1 option available right now.
 
-Laravel is accessible, yet powerful, providing powerful tools needed for large, robust applications. A superb inversion of control container, expressive migration system, and tightly integrated unit testing support give you the tools you need to build any application with which you are tasked.
+A fully formed /docs command would look like the following:
+> /docs [version] [section] [sub section]
+> /docs master eloquent introduction
 
-## Official Documentation
+This will produce a link to http://laravel.com/docs/master/eloquent#introduction
 
-Documentation for the framework can be found on the [Laravel website](http://laravel.com/docs).
+The command does not require all 3 arguments however.  It appends to the url for each you supply.  So just `/docs` would post to the channel http://laravel.com/docs.
 
-## Contributing
+#### WHen you don't know what is available
+We understand that not everyone has all sections of all pages memorized.  That is why the -h option is there.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](http://laravel.com/docs/contributions).
+The -h option will send you text (that only you can see) in slack to let you know whats available.
 
-### License
+> /docs -h
 
-The Laravel framework is open-sourced software licensed under the [MIT license](http://opensource.org/licenses/MIT)
+Will return...
+
+```
+Available document versions are:
+master    4.2    4.1    4.0
+```
+
+The -h option will work at any step you are stuck on.  Add what you know to the command, throw in -h and it will help with the next step.
+
+### Validation
+The command handles some basic validation.  If you pass a version, section or sub section that is not recognized, it will alert you with what you sent, and then show you what the available options are (as if you added -h to the command).
