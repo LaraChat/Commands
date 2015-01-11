@@ -8,13 +8,14 @@ Docs is a simple enough command to use.  It has 3 arguments and 1 option availab
 
 A fully formed /docs command would look like the following:
 > /docs [version] [section] [sub section]
+
 > /docs master eloquent introduction
 
 This will produce a link to http://laravel.com/docs/master/eloquent#introduction
 
 The command does not require all 3 arguments however.  It appends to the url for each you supply.  So just `/docs` would post to the channel http://laravel.com/docs.
 
-#### WHen you don't know what is available
+#### When you don't know what is available
 We understand that not everyone has all sections of all pages memorized.  That is why the -h option is there.
 
 The -h option will send you text (that only you can see) in slack to let you know whats available.
