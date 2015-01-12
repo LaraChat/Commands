@@ -7,6 +7,7 @@ use DOMDocument;
 use DOMXPath;
 use Github\Client;
 use Illuminate\Cache\Repository;
+use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use League\CommonMark\CommonMarkConverter;
@@ -33,7 +34,13 @@ class DocController extends Controller {
      */
     private $slack;
 
-    public function __construct(CommonMarkConverter $markdown, Client $github, Repository $cache, Slack $slack)
+    /**
+     * @var ConfigRepository
+     */
+    private $config;
+
+    public function __construct(CommonMarkConverter $markdown, Client $github, Repository $cache, Slack $slack,
+                                ConfigRepository $config)
     {
         parent::__construct();
 
@@ -41,10 +48,15 @@ class DocController extends Controller {
         $this->github   = $github;
         $this->cache    = $cache;
         $this->slack    = $slack;
+        $this->config   = $config;
     }
 
     public function index(Request $request)
     {
+        if (in_array($request->get('channel_name'), $this->config->get('services.larabot.excludedChannels'))) {
+            return 'LaraBot does not run in this channel.  Please try to run it in a different one.';
+        }
+
         try {
             $documentation = new Documentation($request, $this->slack, $this->github, $this->cache);
 
@@ -55,5 +67,6 @@ class DocController extends Controller {
             return 'Something went wrong.  Check your command for any spelling errors and try again.';
         }
     }
+}
 
 }

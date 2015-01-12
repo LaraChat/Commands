@@ -38,6 +38,10 @@ return [
         'id'     => getenv('SLACK_ID'),
         'secret' => getenv('SLACK_SECRET'),
         'token'  => getenv('SLACK_TOKEN'),
+    ],
+
+    'larabot' => [
+        'excludedChannels' => ['frontporch']
     ]
 
 ];
