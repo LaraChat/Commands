@@ -67,6 +67,5 @@ class DocController extends Controller {
             return 'Something went wrong.  Check your command for any spelling errors and try again.';
         }
     }
-}
 
 }
