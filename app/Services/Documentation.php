@@ -59,7 +59,7 @@ class Documentation implements DocumentationInterface {
     {
         $this->slack->execute('chat.postMessage', [
             'channel'      => $this->request->get('channel_id'),
-            'text'         => $this->url .'('. $this->request->get('user_name') .')',
+            'text'         => $this->url ."\t(". $this->request->get('user_name') .')',
             'username'     => 'LaraBot',
             'icon_url'     => 'https://s3-us-west-2.amazonaws.com/slack-files2/avatars/2015-01-05/3336795461_0e48d3ea4de9fe7693fc_132.jpg',
             'unfurl_links' => false
