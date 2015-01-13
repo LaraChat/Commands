@@ -31,7 +31,7 @@ class UserController extends Controller {
         $this->response = $response;
     }
 
-    public function find($name, Str $str)
+    public function find($name)
     {
         if (substr($name, 0, 1) == 'U' && strlen($name) == 9) {
             return $this->response->json($this->getUsers()->where('id', $name));

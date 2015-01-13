@@ -6,28 +6,61 @@ use DOMDocument;
 use DOMXPath;
 use Github\Client;
 use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Contracts\Config\Repository as ConfigRepository;
 use Illuminate\Support\Collection;
 use League\CommonMark\CommonMarkConverter;
 
 class Interactive implements DocumentationInterface {
 
+    /**
+     * @var Documentation
+     */
     protected $documentation;
 
+    /**
+     * @var Client
+     */
     protected $github;
 
+    /**
+     * @var Repository
+     */
     protected $cache;
 
+    /**
+     * @var string
+     */
     protected $results;
 
-    private   $cacheTime = 60;
+    /**
+     * @var int
+     */
+    private $cacheTime = 60;
 
-    public function __construct(Documentation $documentation, Client $github, Repository $cache)
+    /**
+     * @var ConfigRepository
+     */
+    private $config;
+
+    /**
+     * @param Documentation    $documentation
+     * @param Client           $github
+     * @param Repository       $cache
+     * @param ConfigRepository $config
+     */
+    public function __construct(Documentation $documentation, Client $github, Repository $cache, ConfigRepository $config)
     {
         $this->documentation = $documentation;
         $this->github        = $github;
         $this->cache         = $cache;
+        $this->config        = $config;
     }
 
+    /**
+     * Find the step we are at.  Send the needed result to slack.
+     *
+     * @return string
+     */
     public function start()
     {
         $this->results = $this->checkAndHelp();
@@ -35,17 +68,33 @@ class Interactive implements DocumentationInterface {
         return $this->sendToSlack();
     }
 
+    /**
+     * For helper text, you respond to slack with a string.
+     * This string is only visible to the user who called the command.
+     *
+     * @return string
+     */
     public function sendToSlack()
     {
         return $this->results;
     }
 
+    /**
+     * Handle caching and fetching the response.
+     *
+     * @param $key
+     * @param $callback
+     *
+     * @return mixed
+     */
     public function cacheResponse($key, $callback)
     {
+        // If cache has the key, return it.
         if ($this->cache->has($key) && $this->cache->get($key) != false) {
             return $this->cache->get($key);
         }
 
+        // Get the data and set it in cache.
         $results = $callback();
 
         $this->cache->put($key, $results, $this->cacheTime);
@@ -53,6 +102,11 @@ class Interactive implements DocumentationInterface {
         return $results;
     }
 
+    /**
+     * Check for the existence of an option, print the help.
+     *
+     * @return string
+     */
     private function checkAndHelp()
     {
         if ($this->documentation->version == null) {
@@ -66,37 +120,63 @@ class Interactive implements DocumentationInterface {
         }
     }
 
+    /**
+     * Get the available versions that can be called.
+     *
+     * @return string
+     */
     public function getVersions()
     {
-        $cacheKey = 'docs.versions';
+        $cacheKey = $this->config->get('larabot.cacheKeys.docs.version');
 
         $versions = $this->getCachedVersions($cacheKey);
 
         return $this->prettyArray('versions', $versions);
     }
 
+    /**
+     * Get the available headers that can be called.
+     *
+     * @return string
+     */
     public function getHeaders()
     {
         $this->documentation->verifyVersion();
 
-        $cacheKey = 'docs.' . $this->documentation->version . '.headers';
+        $cacheKey = sprintf($this->config->get('larabot.cacheKeys.docs.header'), $this->documentation->version);
 
         $headers = $this->getCachedHeaders($cacheKey);
 
         return $this->prettyArray('sections for ' . $this->documentation->version, $headers);
     }
 
+    /**
+     * Get the available sub headers that can be called.
+     *
+     * @return string
+     */
     public function getSubs()
     {
         $this->documentation->verifyHeader();
 
-        $cacheKey = 'docs.' . $this->documentation->version . '.' . $this->documentation->header . '.subs';
+        $cacheKey = sprintf($this->config->get('larabot.cacheKeys.docs.sub'), $this->documentation->version, $this->documentation->header);
 
         $subs = $this->getCachedSubs($cacheKey);
 
         return $this->prettyArray('sub sections for ' . $this->documentation->version . '->' . $this->documentation->header, $subs, 6);
     }
 
+    /**
+     * Take the array, break it up into chunked arrays.
+     * Implode to form tabbed strings with each chunk on it's
+     * own line.  Makes it easier to see in slack.
+     *
+     * @param     $type
+     * @param     $array
+     * @param int $chunkSize
+     *
+     * @return string
+     */
     private function prettyArray($type, $array, $chunkSize = 8)
     {
         $array = $array->chunk($chunkSize);
@@ -104,12 +184,21 @@ class Interactive implements DocumentationInterface {
         return '*Available document ' . $type . " are*:\n" . implode("\n", array_map([$this, 'implode'], $array->toArray()));
     }
 
+    /**
+     * Very simply used for the prettyArray map call.
+     *
+     * @param $array
+     *
+     * @return string
+     */
     private function implode($array)
     {
         return implode("\t", $array);
     }
 
     /**
+     * Convert markdown syntax into html.
+     *
      * @param $header
      *
      * @return string
@@ -124,11 +213,13 @@ class Interactive implements DocumentationInterface {
     }
 
     /**
+     * Grab the sub sections from valid HTML.
+     *
      * @param $html
      *
      * @return array
      */
-    private function convertHtmlToArray($html)
+    private function getSubHeadersFromHtml($html)
     {
         $subs = new Collection;
         $dom  = new DOMDocument();
@@ -149,6 +240,8 @@ class Interactive implements DocumentationInterface {
     }
 
     /**
+     * Used to get or set the cache for available versions.
+     *
      * @param $cacheKey
      *
      * @return mixed
@@ -168,6 +261,8 @@ class Interactive implements DocumentationInterface {
     }
 
     /**
+     * Used to get or set the cache for available headers.
+     *
      * @param $cacheKey
      *
      * @return mixed
@@ -196,6 +291,8 @@ class Interactive implements DocumentationInterface {
     }
 
     /**
+     * Used to get or set the cache for available sub headers.
+     *
      * @param $cacheKey
      *
      * @return array
@@ -214,7 +311,7 @@ class Interactive implements DocumentationInterface {
         });
 
         $html = $this->convertMarkdownToHtml($headerDoc);
-        $subs = $this->convertHtmlToArray($html);
+        $subs = $this->getSubHeadersFromHtml($html);
 
         return $subs;
     }
