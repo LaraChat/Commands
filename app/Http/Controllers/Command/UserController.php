@@ -48,6 +48,7 @@ class UserController extends Controller {
     public function count()
     {
         $userCount = $this->getUsers()->count();
+        dump($userCount);
 
         if ($userCount === null) {
             return response()->json('Unable to gather user details at this time.', 503);
