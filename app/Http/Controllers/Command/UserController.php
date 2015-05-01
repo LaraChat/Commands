@@ -58,7 +58,7 @@ class UserController extends Controller {
 
     private function getUsers()
     {
-        ini_set('memory_limit', '20M');
+        ini_set('memory_limit', '40M');
         return new Collection($this->slack->execute('users.list')->getBody()['members']);
     }
 
